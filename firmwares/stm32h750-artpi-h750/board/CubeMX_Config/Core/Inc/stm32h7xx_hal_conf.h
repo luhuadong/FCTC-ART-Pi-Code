@@ -34,7 +34,7 @@
   */
 #define HAL_MODULE_ENABLED
 
-  /* #define HAL_ADC_MODULE_ENABLED   */
+  #define HAL_ADC_MODULE_ENABLED
 /* #define HAL_FDCAN_MODULE_ENABLED   */
 /* #define HAL_FMAC_MODULE_ENABLED   */
 /* #define HAL_CEC_MODULE_ENABLED   */
@@ -166,7 +166,7 @@
 #define  VDD_VALUE                    (3300UL) /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            (0UL) /*!< tick interrupt priority */
 #define  USE_RTOS                     0
-#define  USE_SD_TRANSCEIVER           0U               /*!< use uSD Transceiver */
+#define  USE_SD_TRANSCEIVER           1U               /*!< use uSD Transceiver */
 #define  USE_SPI_CRC	              0U               /*!< use CRC in SPI */
 
 #define  USE_HAL_ADC_REGISTER_CALLBACKS     0U /* ADC register callback disabled     */
