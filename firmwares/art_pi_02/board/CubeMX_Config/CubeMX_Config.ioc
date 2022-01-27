@@ -1,10 +1,11 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_5
-ADC1.IPParameters=Rank-0\#ChannelRegularConversion,master,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,OffsetSignedSaturation-0\#ChannelRegularConversion,NbrOfConversionFlag
+ADC1.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,OffsetSignedSaturation-0\#ChannelRegularConversion,NbrOfConversionFlag,Resolution,master
 ADC1.NbrOfConversionFlag=1
 ADC1.OffsetNumber-0\#ChannelRegularConversion=ADC_OFFSET_NONE
 ADC1.OffsetSignedSaturation-0\#ChannelRegularConversion=DISABLE
 ADC1.Rank-0\#ChannelRegularConversion=1
+ADC1.Resolution=ADC_RESOLUTION_10B
 ADC1.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_1CYCLE_5
 ADC1.master=1
 ETH.IPParameters=MediaInterface
@@ -725,8 +726,8 @@ SH.FMC_SDNWE.0=FMC_SDNWE,13b-sda1
 SH.FMC_SDNWE.ConfNb=1
 SH.S_TIM5_CH1.0=TIM5_CH1,PWM Generation1 CH1
 SH.S_TIM5_CH1.ConfNb=1
-SPI1.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_2
-SPI1.CalculateBaudRate=200.0 MBits/s
+SPI1.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_4
+SPI1.CalculateBaudRate=100.0 MBits/s
 SPI1.Direction=SPI_DIRECTION_2LINES
 SPI1.IPParameters=VirtualType,Mode,Direction,CalculateBaudRate,BaudRatePrescaler
 SPI1.Mode=SPI_MODE_MASTER
