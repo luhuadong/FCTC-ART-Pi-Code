@@ -231,6 +231,9 @@
 #define PKG_USING_SGP30
 #define PKG_USING_SGP30_I2C_ADDR
 #define PKG_USING_SGP30_I2C_ADDRESS 0x58
+#define PKG_USING_SGP30_DEBUG
+#define PKG_USING_SGP30_SAMPLE
+#define PKG_USING_SGP30_SAMPLE_I2C_BUS_NAME "i2c1"
 #define PKG_USING_SGP30_LATEST_VERSION
 /* end of peripheral libraries and drivers */
 
@@ -276,8 +279,8 @@
 
 /* Notice: PB6 --> 22; PB7 --> 23 */
 
-#define BSP_I2C1_SCL_PIN 22
-#define BSP_I2C1_SDA_PIN 23
+#define BSP_I2C1_SCL_PIN 123
+#define BSP_I2C1_SDA_PIN 124
 /* end of On-chip Peripheral */
 /* end of Hardware Drivers Config */
 

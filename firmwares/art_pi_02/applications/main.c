@@ -14,9 +14,8 @@
 #include "dhtxx.h"
 #include "gp2y10.h"
 
-#define LED_PIN GET_PIN(I, 8)
-#define DATA_PIN GET_PIN(I, 5)
-
+#define LED_PIN                  GET_PIN(I, 8)
+#define DATA_PIN                 GET_PIN(I, 5)
 #define GP2Y10_ILED_PIN          GET_PIN(C, 7)
 #define GP2Y10_AOUT_PIN          GET_PIN(B, 1)
 
@@ -27,7 +26,11 @@ int main(void)
     struct rt_sensor_data sensor_data;
 
     rt_kprintf("FCTC Demo 02\n");
-    rt_kprintf("pin => %d\n", DATA_PIN);
+    rt_kprintf("PI5  => %d\n", GET_PIN(I, 5));
+    rt_kprintf("PB1  => %d\n", GET_PIN(B, 1));
+    rt_kprintf("PH2  => %d\n", GET_PIN(H, 2));
+    rt_kprintf("PH11 => %d\n", GET_PIN(H, 11));
+    rt_kprintf("PH12 => %d\n", GET_PIN(H, 12));
 
     temp_sensor = rt_device_find("temp_dht");
     rt_device_open(temp_sensor, RT_DEVICE_FLAG_RDWR);
