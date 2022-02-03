@@ -5,7 +5,7 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2021-10-18     Meco Man     The first version
+ * 2022-01-28     Rudy Lo      The First version
  */
 #ifndef LV_PORT_INDEV_H
 #define LV_PORT_INDEV_H
