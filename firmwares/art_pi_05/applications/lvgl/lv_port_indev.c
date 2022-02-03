@@ -1,83 +1,119 @@
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+ * Copyright (c) 2006-2022, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2021-10-18     Meco Man     The first version
+ * 2022-02-01     Rudy Lo      The first version
  */
+
 #include <lvgl.h>
 #include <stdbool.h>
 #include <rtdevice.h>
 #include <drv_gpio.h>
 
-#define USER_BUTTON_PIN        GET_PIN(H, 4)
+#include "ft6236.h"
 
-/*Test if `id` button is pressed or not*/
-static bool button_is_pressed(uint8_t id)
+#define TOUCH_DEVICE_NAME    "touch_ft"    /* Touch 设备名称 */
+#define TOUCH_DEVICE_I2C_BUS "i2c2"        /* SCL -> PH15(127), SDA -> PH13(125) */
+#define REST_PIN             GET_PIN(A, 3)
+
+static rt_device_t touch_dev;             /* Touch 设备句柄 */
+static struct rt_touch_data *read_data;
+
+static rt_int16_t last_x = 0;
+static rt_int16_t last_y = 0;
+
+#define USER_BUTTON_PIN        GET_PIN(H, 4)  /* Reserve for LV_INDEV_TYPE_BUTTON */
+
+/*
+struct rt_touch_data
 {
-    switch(id)
+    rt_uint8_t          event;                 // The touch event of the data
+    rt_uint8_t          track_id;              // Track id of point
+    rt_uint8_t          width;                 // Point of width
+    rt_uint16_t         x_coordinate;          // Point of x coordinate
+    rt_uint16_t         y_coordinate;          // Point of y coordinate
+    rt_tick_t           timestamp;             // The timestamp when the data was received
+};
+*/
+static bool touchpad_is_pressed(void)
+{
+    if (RT_EOK == rt_device_read(touch_dev, 0, read_data, 1))  // return RT_EOK is a bug (ft6236)
     {
-    case 0:
-        if(rt_pin_read(USER_BUTTON_PIN) == PIN_LOW)
+        if (read_data->event == RT_TOUCH_EVENT_DOWN) {
+            last_x = read_data->x_coordinate;
+            last_y = read_data->y_coordinate;
+
+            rt_kprintf("touch: x = %d, y = %d\n", last_x, last_y);
             return true;
-        break;
-    default: break;
+        }
     }
 
     return false;
 }
 
-static int8_t button_get_pressed_id(void)
+static void touchpad_get_xy(rt_int16_t *x, rt_int16_t *y)
 {
-    uint8_t i;
-
-    /*Check to buttons see which is being pressed*/
-    for(i = 0; i < 4; i++)
-    {
-        /*Return the pressed button's ID*/
-        if(button_is_pressed(i))
-        {
-            return i;
-        }
-    }
-
-    /*No button pressed*/
-    return -1;
+    *x = last_x;
+    *y = last_y;
 }
 
-void button_read(lv_indev_drv_t * drv, lv_indev_data_t*data)
+static void touchpad_read(lv_indev_drv_t *indev, lv_indev_data_t *data)
 {
-    static uint32_t last_btn = 0;   /*Store the last pressed button*/
-    int btn_pr = button_get_pressed_id(); /*Get the ID (0,1,2...) of the pressed button*/
-    if(btn_pr >= 0)
-    {               /*Is there a button press? (E.g. -1 indicated no button was pressed)*/
-       last_btn = btn_pr;           /*Save the ID of the pressed button*/
-       data->state = LV_INDEV_STATE_PRESSED;  /*Set the pressed state*/
+    /*`touchpad_is_pressed` and `touchpad_get_xy` needs to be implemented by you*/
+    if(touchpad_is_pressed()) {
+        data->state = LV_INDEV_STATE_PRESSED;
+        touchpad_get_xy(&data->point.x, &data->point.y);
+    } else {
+        data->state = LV_INDEV_STATE_RELEASED;
     }
-    else
-    {
-       data->state = LV_INDEV_STATE_RELEASED; /*Set the released state*/
-    }
-
-    data->btn_id = last_btn;            /*Save the last button*/
 }
 
+rt_err_t rt_hw_ft6236_register(void)
+{
+    struct rt_touch_config config;
+    config.dev_name = TOUCH_DEVICE_I2C_BUS;
+    rt_hw_ft6236_init(TOUCH_DEVICE_NAME, &config, REST_PIN);
 
-lv_indev_t * button_indev;
+    touch_dev = rt_device_find(TOUCH_DEVICE_NAME);
+    if (!touch_dev) {
+        return -RT_ERROR;
+    }
+
+    read_data = (struct rt_touch_data *)rt_calloc(1, sizeof(struct rt_touch_data));
+    if (!read_data) {
+        return -RT_ENOMEM;
+    }
+
+    if (!rt_device_open(touch_dev, RT_DEVICE_FLAG_RDONLY)) {
+        struct rt_touch_info info;
+        rt_device_control(touch_dev, RT_TOUCH_CTRL_GET_INFO, &info);
+        rt_kprintf("type       :%d\n", info.type);
+        rt_kprintf("vendor     :%s\n", info.vendor);
+        rt_kprintf("point_num  :%d\n", info.point_num);
+        rt_kprintf("range_x    :%d\n", info.range_x);
+        rt_kprintf("range_y    :%d\n", info.range_y);
+        return RT_EOK;
+    } else {
+        rt_kprintf("open touch device failed.\n");
+        return -RT_ERROR;
+    }
+}
+
+lv_indev_t * touch_indev;
 
 void lv_port_indev_init(void)
 {
-    static lv_indev_drv_t indev_drv;
+    static lv_indev_drv_t indev_drv;         /* Descriptor of a input device driver */
+    lv_indev_drv_init(&indev_drv);           /* Basic initialization */
+    indev_drv.type = LV_INDEV_TYPE_POINTER;  /* Touch pad is a pointer-like device */
+    indev_drv.read_cb = touchpad_read;       /* Set your driver function */
 
-    /* Initialize the on-board buttons */
-    rt_pin_mode(USER_BUTTON_PIN, PIN_MODE_INPUT);
+    /* Register the driver in LVGL and save the created input device object */
+    touch_indev = lv_indev_drv_register(&indev_drv);
 
-    lv_indev_drv_init(&indev_drv);      /*Basic initialization*/
-    indev_drv.type = LV_INDEV_TYPE_BUTTON;
-    indev_drv.read_cb = button_read;
-
-    /*Register the driver in LVGL and save the created input device object*/
-    button_indev = lv_indev_drv_register(&indev_drv);
+    /* Register touch device */
+    rt_hw_ft6236_register();
 }
