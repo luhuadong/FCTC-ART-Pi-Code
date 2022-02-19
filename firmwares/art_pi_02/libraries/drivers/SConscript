@@ -15,6 +15,7 @@ drv_sdio.c
 drv_wlan.c
 drv_sdram.c
 drv_lcd.c
+drv_adc.c
 ''')
 #CubeMX_Config/Src/stm32h7xx_hal_msp.c
 

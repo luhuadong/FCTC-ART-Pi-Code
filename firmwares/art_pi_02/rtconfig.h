@@ -139,6 +139,20 @@
 
 /* Utilities */
 
+#define RT_USING_ULOG
+#define ULOG_OUTPUT_LVL_D
+#define ULOG_OUTPUT_LVL 7
+#define ULOG_ASSERT_ENABLE
+#define ULOG_LINE_BUF_SIZE 128
+
+/* log format */
+
+#define ULOG_USING_COLOR
+#define ULOG_OUTPUT_TIME
+#define ULOG_OUTPUT_LEVEL
+#define ULOG_OUTPUT_TAG
+/* end of log format */
+#define ULOG_BACKEND_USING_CONSOLE
 /* end of Utilities */
 /* end of RT-Thread Components */
 
@@ -226,14 +240,10 @@
 #define PKG_USING_GP2Y10_CONVERT_BITS 16
 #define PKG_USING_GP2Y10_VOLTAGE_RATIO 11
 #define PKG_USING_GP2Y10_SOFT_FILTER
-#define PKG_USING_GP2Y10_DEBUG
 #define PKG_USING_GP2Y10_LATEST_VERSION
 #define PKG_USING_SGP30
 #define PKG_USING_SGP30_I2C_ADDR
 #define PKG_USING_SGP30_I2C_ADDRESS 0x58
-#define PKG_USING_SGP30_DEBUG
-#define PKG_USING_SGP30_SAMPLE
-#define PKG_USING_SGP30_SAMPLE_I2C_BUS_NAME "i2c1"
 #define PKG_USING_SGP30_LATEST_VERSION
 /* end of peripheral libraries and drivers */
 

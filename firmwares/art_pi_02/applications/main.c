@@ -5,7 +5,7 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2020-09-02     RT-Thread    first version
+ * 2021-03-02     Rudy Lo      first version
  */
 
 #include <rtthread.h>
@@ -13,36 +13,81 @@
 #include "drv_common.h"
 #include "dhtxx.h"
 #include "gp2y10.h"
+#include "sgp30.h"
 
-#define LED_PIN                  GET_PIN(I, 8)
-#define DATA_PIN                 GET_PIN(I, 5)
-#define GP2Y10_ILED_PIN          GET_PIN(C, 7)
+#define LOG_TAG     "main"
+#define LOG_LVL     LOG_LVL_DBG
+#include <ulog.h>
+
+#define DHT22_DATA_PIN           GET_PIN(I, 5)
+#define GP2Y10_ILED_PIN          GET_PIN(H, 2)
 #define GP2Y10_AOUT_PIN          GET_PIN(B, 1)
+#define SGP30_I2C_BUS_NAME       "i2c1"
 
-int main(void)
+static rt_mutex_t lock = RT_NULL;
+
+static void sensor_read_entry(void *device_name)
 {
-    rt_uint32_t count = 3;
-    rt_device_t temp_sensor = RT_NULL;
+    rt_device_t sensor = RT_NULL;
     struct rt_sensor_data sensor_data;
 
-    rt_kprintf("FCTC Demo 02\n");
-    rt_kprintf("PI5  => %d\n", GET_PIN(I, 5));
-    rt_kprintf("PB1  => %d\n", GET_PIN(B, 1));
-    rt_kprintf("PH2  => %d\n", GET_PIN(H, 2));
-    rt_kprintf("PH11 => %d\n", GET_PIN(H, 11));
-    rt_kprintf("PH12 => %d\n", GET_PIN(H, 12));
+    sensor = rt_device_find(device_name);
 
-    temp_sensor = rt_device_find("temp_dht");
-    rt_device_open(temp_sensor, RT_DEVICE_FLAG_RDWR);
+    if (rt_device_open(sensor, RT_DEVICE_FLAG_RDWR)) {
+        rt_kprintf("Open %s sensor device failed.\n", device_name);
+        return;
+    }
 
-    while(count--)
-    {
-        rt_device_read(temp_sensor, 0, &sensor_data, 1);
-        rt_kprintf("[%d] Temp: %d\n", sensor_data.timestamp, sensor_data.data.temp);
+    while (1) {
+        rt_device_read(sensor, 0, &sensor_data, 1);
+
+        rt_mutex_take(lock, RT_WAITING_FOREVER);
+
+        switch (sensor_data.type) {
+        case RT_SENSOR_CLASS_TEMP:
+            rt_kprintf("[%d] Temp: %d 'C\n", sensor_data.timestamp, sensor_data.data.temp/10);
+            break;
+        case RT_SENSOR_CLASS_HUMI:
+            rt_kprintf("[%d] Humi: %d RH%\n", sensor_data.timestamp, sensor_data.data.humi/10);
+            break;
+        case RT_SENSOR_CLASS_DUST:
+            rt_kprintf("[%d] Dust: %d ug/m3\n", sensor_data.timestamp, sensor_data.data.dust);
+            break;
+        case RT_SENSOR_CLASS_TVOC:
+            rt_kprintf("[%d] TVOC: %d ppb\n", sensor_data.timestamp, sensor_data.data.tvoc);
+            break;
+        case RT_SENSOR_CLASS_ECO2:
+            rt_kprintf("[%d] eCO2: %d ppm\n", sensor_data.timestamp, sensor_data.data.eco2);
+            break;
+        default: break;
+        }
+
+        rt_mutex_release(lock);
+
         rt_thread_mdelay(2000);
     }
 
-    rt_device_close(temp_sensor);
+    rt_device_close(sensor);
+}
+
+int main(void)
+{
+    lock = rt_mutex_create("lock", RT_IPC_FLAG_PRIO);
+
+    rt_thread_t tid_1, tid_2, tid_3, tid_4, tid_5;
+
+    tid_1 = rt_thread_create("temp_th", sensor_read_entry, "temp_dht", 1024, 15, 20);
+    tid_2 = rt_thread_create("humi_th", sensor_read_entry, "humi_dht", 1024, 15, 20);
+    tid_3 = rt_thread_create("dust_th", sensor_read_entry, "dust_gp2", 1024, 15, 20);
+    tid_4 = rt_thread_create("tvoc_th", sensor_read_entry, "tvoc_sg3", 1024, 15, 20);
+    tid_5 = rt_thread_create("eco2_th", sensor_read_entry, "eco2_sg3", 1024, 15, 20);
+
+    if (tid_1) rt_thread_startup(tid_1);
+    if (tid_2) rt_thread_startup(tid_2);
+    if (tid_3) rt_thread_startup(tid_3);
+    if (tid_4) rt_thread_startup(tid_4);
+    if (tid_5) rt_thread_startup(tid_5);
+
     return RT_EOK;
 }
 
@@ -51,61 +96,12 @@ static int rt_hw_dht_port(void)
     struct rt_sensor_config cfg;
 
     cfg.intf.type = RT_SENSOR_INTF_ONEWIRE;
-    cfg.intf.user_data = (void *)DATA_PIN;
+    cfg.intf.user_data = (void *)DHT22_DATA_PIN;
     rt_hw_dht_init("dht", &cfg);
 
     return RT_EOK;
 }
 INIT_COMPONENT_EXPORT(rt_hw_dht_port);
-
-
-static void read_dust_entry(void *args)
-{
-    rt_device_t dust_dev = RT_NULL;
-    struct rt_sensor_data sensor_data;
-
-    dust_dev = rt_device_find(args);
-    if (dust_dev == RT_NULL)
-    {
-        rt_kprintf("Can't find dust device.\n");
-        return;
-    }
-
-    if (rt_device_open(dust_dev, RT_DEVICE_FLAG_RDWR))
-    {
-        rt_kprintf("Open dust device failed.\n");
-        return;
-    }
-
-    while(1)
-    {
-        if (1 != rt_device_read(dust_dev, 0, &sensor_data, 1))
-        {
-            rt_kprintf("Read dust data failed.\n");
-            continue;
-        }
-        rt_kprintf("[%d] Dust: %d\n", sensor_data.timestamp, sensor_data.data.dust);
-
-        rt_thread_mdelay(2000);
-    }
-
-    rt_device_close(dust_dev);
-}
-
-static int gp2y10_read_sample(void)
-{
-    rt_thread_t dust_thread;
-
-    dust_thread = rt_thread_create("dust_th", read_dust_entry,
-                                   "dust_gp2", 1024,
-                                    RT_THREAD_PRIORITY_MAX / 2, 20);
-
-    if (dust_thread)
-        rt_thread_startup(dust_thread);
-}
-#ifdef FINSH_USING_MSH
-MSH_CMD_EXPORT(gp2y10_read_sample, read gp2y10 sensor data);
-#endif
 
 static int rt_hw_gp2y10_port(void)
 {
@@ -115,13 +111,24 @@ static int rt_hw_gp2y10_port(void)
     gp2y10_dev.iled_pin = GP2Y10_ILED_PIN;
     gp2y10_dev.aout_pin = GP2Y10_AOUT_PIN;
 
-    //cfg.intf.type = RT_SENSOR_INTF_ADC;
     cfg.intf.user_data = (void *)&gp2y10_dev;
     rt_hw_gp2y10_init("gp2", &cfg);
 
     return RT_EOK;
 }
 INIT_COMPONENT_EXPORT(rt_hw_gp2y10_port);
+
+static int rt_hw_sgp30_port(void)
+{
+    struct rt_sensor_config cfg;
+
+    cfg.intf.type = RT_SENSOR_INTF_I2C;
+    cfg.intf.dev_name = SGP30_I2C_BUS_NAME;
+    rt_hw_sgp30_init("sg3", &cfg);
+
+    return RT_EOK;
+}
+INIT_COMPONENT_EXPORT(rt_hw_sgp30_port);
 
 #include "stm32h7xx.h"
 static int vtor_config(void)
@@ -131,5 +138,3 @@ static int vtor_config(void)
     return 0;
 }
 INIT_BOARD_EXPORT(vtor_config);
-
-
