@@ -216,7 +216,6 @@
 #define PKG_USING_PMSXX
 #define PKG_USING_PMSXX_ENHANCED
 #define PKG_USING_PMSXX_SEND_WAIT_TIME 2000
-#define PKG_USING_PMSXX_UART_DMA
 #define PKG_USING_PMSXX_LATEST_VERSION
 /* end of peripheral libraries and drivers */
 
