@@ -85,21 +85,7 @@
 #define DFS_FILESYSTEMS_MAX 6
 #define DFS_FILESYSTEM_TYPES_MAX 6
 #define DFS_FD_MAX 32
-#define RT_USING_DFS_ELMFAT
-
-/* elm-chan's FatFs, Generic FAT Filesystem Module */
-
-#define RT_DFS_ELM_CODE_PAGE 437
-#define RT_DFS_ELM_WORD_ACCESS
-#define RT_DFS_ELM_USE_LFN_3
-#define RT_DFS_ELM_USE_LFN 3
-#define RT_DFS_ELM_MAX_LFN 255
-#define RT_DFS_ELM_DRIVES 2
-#define RT_DFS_ELM_MAX_SECTOR_SIZE 512
-#define RT_DFS_ELM_REENTRANT
-/* end of elm-chan's FatFs, Generic FAT Filesystem Module */
 #define RT_USING_DFS_DEVFS
-#define RT_USING_DFS_ROMFS
 /* end of Device virtual file system */
 
 /* Device Drivers */
@@ -110,12 +96,6 @@
 #define RT_SERIAL_USING_DMA
 #define RT_SERIAL_RB_BUFSZ 64
 #define RT_USING_PIN
-#define RT_USING_SDIO
-#define RT_SDIO_STACK_SIZE 512
-#define RT_SDIO_THREAD_PRIORITY 15
-#define RT_MMCSD_STACK_SIZE 1024
-#define RT_MMCSD_THREAD_PREORITY 22
-#define RT_MMCSD_MAX_PARTITION 16
 #define RT_USING_SPI
 
 /* Using USB */
@@ -161,6 +141,28 @@
 
 /* IoT - internet of things */
 
+#define PKG_USING_FREEMODBUS
+#define PKG_MODBUS_MASTER
+
+/* advanced configuration */
+
+#define RT_M_DISCRETE_INPUT_START 0
+#define RT_M_DISCRETE_INPUT_NDISCRETES 16
+#define RT_M_COIL_START 0
+#define RT_M_COIL_NCOILS 64
+#define RT_M_REG_INPUT_START 0
+#define RT_M_REG_INPUT_NREGS 100
+#define RT_M_REG_HOLDING_START 0
+#define RT_M_REG_HOLDING_NREGS 100
+#define RT_M_HD_RESERVE 0
+#define RT_M_IN_RESERVE 0
+#define RT_M_CO_RESERVE 0
+#define RT_M_DI_RESERVE 0
+/* end of advanced configuration */
+#define PKG_MODBUS_MASTER_RTU
+#define RT_MODBUS_MASTER_USE_CONTROL_PIN
+#define MODBUS_MASTER_RT_CONTROL_PIN_INDEX 132
+#define PKG_USING_FREEMODBUS_V160
 
 /* Wi-Fi */
 
@@ -260,8 +262,6 @@
 /* Onboard Peripheral */
 
 #define BSP_USING_USB_TO_USART
-#define BSP_USING_FS
-#define BSP_USING_SDCARD_FS
 /* end of Onboard Peripheral */
 
 /* On-chip Peripheral */
@@ -269,8 +269,7 @@
 #define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART4
-#define BSP_USING_SDIO
-#define BSP_USING_SDIO1
+#define BSP_USING_UART5
 /* end of On-chip Peripheral */
 /* end of Hardware Drivers Config */
 
