@@ -5,7 +5,7 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2020-09-02     RT-Thread    first version
+ * 2021-06-02     Rudy Lo      first version
  */
 
 #include <rtthread.h>
@@ -15,30 +15,44 @@
 #include "mb.h"
 #include "mb_m.h"
 
-#define SLAVE_ADDR      0x01
-#define PORT_NUM        5
-#define PORT_BAUDRATE   9600
-
-#define PORT_PARITY     MB_PAR_NONE
-
-#define MB_POLL_THREAD_PRIORITY  (RT_THREAD_PRIORITY_MAX / 4)
-#define MB_SEND_THREAD_PRIORITY  (RT_THREAD_PRIORITY_MAX - 1)  /* Why? */
-
-#define MB_SEND_REG_START  2
-#define MB_SEND_REG_NUM    2
-
+#define SLAVE_ADDR         0x01
+#define PORT_NUM           5
+#define PORT_BAUDRATE      9600
+#define PORT_PARITY        MB_PAR_NONE
 #define MB_POLL_CYCLE_MS   500
 
-static void mb_master_samlpe(int argc, char **argv)
+static int turn_on_coil(rt_uint16_t num)
 {
     eMBMasterReqErrCode error_code = MB_MRE_NO_ERR;
 
+    error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0xFF00, rt_tick_from_millisecond(3000));
+
+    if (error_code != MB_MRE_NO_ERR) {
+        rt_kprintf("Error code: %d\n", error_code);
+        return -RT_ERROR;
+    }
+    return RT_EOK;
+}
+
+static int turn_off_coil(rt_uint16_t num)
+{
+    eMBMasterReqErrCode error_code = MB_MRE_NO_ERR;
+
+    error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0x0000, rt_tick_from_millisecond(3000));
+
+    if (error_code != MB_MRE_NO_ERR) {
+        rt_kprintf("Error code: %d\n", error_code);
+        return -RT_ERROR;
+    }
+    return RT_EOK;
+}
+
+static void modbus_set_coil(int argc, char **argv)
+{
     if (argc < 3) {
-        rt_kprintf("Modbus master test sample\n");
         rt_kprintf("Usage:\n");
-        rt_kprintf("  %s read <num>\n", argv[0]);
-        rt_kprintf("  %s turn_on <num>\n", argv[0]);
-        rt_kprintf("  %s turn_off <num>\n", argv[0]);
+        rt_kprintf("  %s on  <num>\n", argv[0]);
+        rt_kprintf("  %s off <num>\n", argv[0]);
         return;
     }
 
@@ -48,58 +62,26 @@ static void mb_master_samlpe(int argc, char **argv)
         return;
     }
 
-    if (0 == rt_strncmp("read", argv[1], 4)) {
-
-        rt_kprintf("Read coil %s\n", argv[2]);
-        error_code = eMBMasterReqReadCoils(SLAVE_ADDR, num, 1, RT_WAITING_FOREVER);
-
-#if 0
-        UCHAR  pucFrame[16] = {0};
-        USHORT usLen = 0;
-
-        eMBMasterFuncReadCoils(pucFrame, &usLen);
-
-        for (int i=0; i<sizeof(pucFrame); i++) {
-            rt_kprintf("%02X ", pucFrame[i]);
-        }
-        rt_kprintf("\n");
-#else
-        if (error_code == MB_MRE_NO_ERR) {
-            rt_kprintf("Error code: %d\n", error_code);
-            //extern UCHAR ucMCoilBuf[MB_MASTER_TOTAL_SLAVE_NUM][M_COIL_NCOILS/8];
-            //extern ucMCoilBuf;
-            extern UCHAR ucMCoilBuf[16][8];
-            rt_kprintf("Coil state: %d\n", ucMCoilBuf[0][1]);
-        }
-
-#endif
+    if (0 == rt_strncmp("on", argv[1], 2)) {
+        eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0xFF00, rt_tick_from_millisecond(3000));
+        //turn_on_coil(num);
     }
-    else if (0 == rt_strncmp("turn_on", argv[1], 7)) {
-        rt_kprintf("Turn on coil %s\n", argv[2]);
-        error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0xFF00, RT_WAITING_FOREVER);
-    }
-    else if (0 == rt_strncmp("turn_off", argv[1], 8)) {
-        rt_kprintf("Turn off coil %s\n", argv[2]);
-        error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0x0000, RT_WAITING_FOREVER);
+    else if (0 == rt_strncmp("off", argv[1], 3)) {
+        eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0x0000, rt_tick_from_millisecond(3000));
+        //turn_off_coil(num);
     }
     else {
         rt_kprintf("Unknown commands\n");
     }
-
-    /* Record the number of errors */
-    if (error_code != MB_MRE_NO_ERR) {
-        rt_kprintf("Error code: %d\n", error_code);
-    }
 }
-MSH_CMD_EXPORT(mb_master_samlpe, run a modbus master sample);
+MSH_CMD_EXPORT(modbus_set_coil, Modbus master set coil sample);
 
 static void mb_master_poll(void *parameter)
 {
     eMBMasterInit(MB_RTU, PORT_NUM, PORT_BAUDRATE, PORT_PARITY);
     eMBMasterEnable();
 
-    while (1)
-    {
+    while (1) {
         eMBMasterPoll();
         rt_thread_mdelay(MB_POLL_CYCLE_MS);
     }
@@ -107,16 +89,15 @@ static void mb_master_poll(void *parameter)
 
 int main(void)
 {
-    rt_thread_t tid1 = RT_NULL;
+    rt_thread_t tid = RT_NULL;
+    tid = rt_thread_create("md_poll", mb_master_poll, RT_NULL, 512, 10, 10);
 
-    tid1 = rt_thread_create("md_poll", mb_master_poll, RT_NULL, 512, MB_POLL_THREAD_PRIORITY, 10);
-    if (tid1 != RT_NULL) {
-        rt_thread_startup(tid1);
-    } else {
+    if (tid == RT_NULL) {
         rt_kprintf("Create mb_master_poll thread failed!\n");
         return RT_ERROR;
     }
 
+    rt_thread_startup(tid);
     return RT_EOK;
 }
 
@@ -128,4 +109,3 @@ static int vtor_config(void)
     return 0;
 }
 INIT_BOARD_EXPORT(vtor_config);
-
