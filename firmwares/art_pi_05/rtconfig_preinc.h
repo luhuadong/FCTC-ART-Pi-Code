@@ -6,6 +6,7 @@
 /* RT-Thread pre-include file */
 
 #define HAVE_CCONFIG_H
+#define LFS_CONFIG lfs_config.h
 #define RT_USING_NEWLIB
 #define STM32H750xx
 #define USE_HAL_DRIVER

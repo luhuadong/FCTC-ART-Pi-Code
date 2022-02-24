@@ -14,7 +14,8 @@
 #include "drv_common.h"
 #include "pmsxx.h"
 
-#define FILE_NAME      "/sdcard/sensor.csv"
+//#define FILE_NAME      "/sdcard/sensor.csv"
+#define FILE_NAME      "/flash/sensor.csv"
 #define UART_NAME      "uart6"
 
 static void read_sensor_data_to_sdcard(void)

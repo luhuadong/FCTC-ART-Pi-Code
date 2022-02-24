@@ -110,6 +110,7 @@
 #define RT_SERIAL_USING_DMA
 #define RT_SERIAL_RB_BUFSZ 64
 #define RT_USING_PIN
+#define RT_USING_MTD_NOR
 #define RT_USING_RTC
 #define RT_USING_SOFT_RTC
 #define RT_USING_SDIO
@@ -119,6 +120,10 @@
 #define RT_MMCSD_THREAD_PREORITY 22
 #define RT_MMCSD_MAX_PARTITION 16
 #define RT_USING_SPI
+#define RT_USING_SFUD
+#define RT_SFUD_USING_SFDP
+#define RT_SFUD_USING_FLASH_INFO_TABLE
+#define RT_SFUD_SPI_MAX_HZ 50000000
 #define RT_USING_SENSOR
 #define RT_USING_SENSOR_CMD
 
@@ -230,6 +235,23 @@
 /* Micrium: Micrium software products porting for RT-Thread */
 
 /* end of Micrium: Micrium software products porting for RT-Thread */
+#define PKG_USING_FAL
+#define FAL_DEBUG_CONFIG
+#define FAL_DEBUG 1
+#define FAL_PART_HAS_TABLE_CFG
+#define FAL_USING_SFUD_PORT
+#define FAL_USING_NOR_FLASH_DEV_NAME "norflash0"
+#define PKG_USING_FAL_V00500
+#define PKG_FAL_VER_NUM 0x00500
+#define PKG_USING_LITTLEFS
+#define PKG_USING_LITTLEFS_LATEST_VERSION
+#define LFS_READ_SIZE 256
+#define LFS_PROG_SIZE 256
+#define LFS_BLOCK_SIZE 4096
+#define LFS_CACHE_SIZE 256
+#define LFS_BLOCK_CYCLES -1
+#define LFS_THREADSAFE
+#define LFS_LOOKAHEAD_MAX 128
 /* end of system packages */
 
 /* peripheral libraries and drivers */
@@ -269,8 +291,10 @@
 /* Onboard Peripheral */
 
 #define BSP_USING_USB_TO_USART
+#define BSP_USING_SPI_FLASH
 #define BSP_USING_FS
 #define BSP_USING_SDCARD_FS
+#define BSP_USING_SPI_FLASH_FS
 /* end of Onboard Peripheral */
 
 /* On-chip Peripheral */
@@ -279,6 +303,8 @@
 #define BSP_USING_UART
 #define BSP_USING_UART4
 #define BSP_USING_UART6
+#define BSP_USING_SPI
+#define BSP_USING_SPI1
 #define BSP_USING_SDIO
 #define BSP_USING_SDIO1
 /* end of On-chip Peripheral */
