@@ -13,6 +13,7 @@
 #include <dfs_posix.h> /* 当需要使用文件操作时，需要包含这个头文件 */
 #include "drv_common.h"
 #include "pmsxx.h"
+#include <easyflash.h>
 
 //#define FILE_NAME      "/sdcard/sensor.csv"
 #define FILE_NAME      "/flash/sensor.csv"
@@ -69,8 +70,39 @@ static void read_sensor_data_to_sdcard(void)
 }
 MSH_CMD_EXPORT(read_sensor_data_to_sdcard, Read sensor data to sdcard);
 
+static void test_env(void)
+{
+    rt_uint32_t boot_times = 0;
+    size_t value_len = 0, ret = 0;
+
+    /* 从环境变量中获取启动次数 */
+    ret = ef_get_env_blob("boot_times", &boot_times, sizeof(boot_times), &value_len);
+
+    /* 获取启动次数是否失败 */
+    if (ret != sizeof(boot_times)) {
+        rt_kprintf("Not found 'boot_times' in ENV.\n");
+        boot_times = 0;
+    }
+
+    /* 启动次数加 1 */
+    boot_times++;
+
+    rt_kprintf("=======================================\n");
+    rt_kprintf("The system now boot %d times\n", boot_times);
+    rt_kprintf("=======================================\n");
+
+    /* 保存开机次数的值 */
+    ef_set_env_blob("boot_times", &boot_times, sizeof(boot_times));
+    ef_save_env();
+}
+
 int main(void)
 {
+    if (easyflash_init() == EF_NO_ERR)
+    {
+        /* 演示环境变量功能 */
+        test_env();
+    }
     return RT_EOK;
 }
 

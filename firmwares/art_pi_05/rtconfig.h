@@ -212,6 +212,15 @@
 
 /* tools packages */
 
+#define PKG_USING_EASYFLASH
+#define PKG_EASYFLASH_ENV
+#define PKG_EASYFLASH_ERASE_GRAN 4096
+#define PKG_EASYFLASH_WRITE_GRAN_1BIT
+#define PKG_EASYFLASH_WRITE_GRAN 1
+#define PKG_EASYFLASH_START_ADDR 0
+#define PKG_EASYFLASH_DEBUG
+#define PKG_USING_EASYFLASH_V410
+#define PKG_EASYFLASH_VER_NUM 0x40100
 /* end of tools packages */
 
 /* system packages */
