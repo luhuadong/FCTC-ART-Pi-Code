@@ -72,4 +72,6 @@ int ft6236_sample(void)
 
     return RT_EOK;
 }
+#if 0
 INIT_APP_EXPORT(ft6236_sample);
+#endif
