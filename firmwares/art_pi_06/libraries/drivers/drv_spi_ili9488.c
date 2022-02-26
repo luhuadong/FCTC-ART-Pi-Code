@@ -6,6 +6,7 @@
  * Change Logs:
  * Date           Author            Notes
  * 2020-08-10     zylx              first version
+ * 2022-02-01     Rudy Lo           add lcd_fill_array function
  */
 
 #include <board.h>
@@ -244,7 +245,7 @@ int rt_hw_spi_lcd_init(void)
     rt_thread_mdelay(120);
     lcd_write_cmd(0x29);
 
-    rt_thread_mdelay(50);	//delay screen update to prevent screen appears white when the default color is black
+    rt_thread_mdelay(50);   //delay screen update to prevent screen appears white when the default color is black
 
     return RT_EOK;
 }
@@ -412,8 +413,8 @@ void lcd_fill(rt_uint16_t x_start, rt_uint16_t y_start, rt_uint16_t x_end, rt_ui
     rt_uint8_t *fill_buf = RT_NULL;
 
     size = (x_end - x_start) * (y_end - y_start) * 3;
-	
-	if (size > LCD_CLEAR_SEND_NUMBER)
+
+    if (size > LCD_CLEAR_SEND_NUMBER)
     {
         /* the number of remaining to be filled */
         size_remain = size - LCD_CLEAR_SEND_NUMBER;
@@ -497,7 +498,7 @@ void lcd_fill_array(rt_uint16_t x_start, rt_uint16_t y_start, rt_uint16_t x_end,
         array[3 * i + 2] = *color_p;
         color_p++;
     }
-
+    
     lcd_address_set(x_start, y_start, x_end, y_end);
     rt_pin_write(LCD_DC_PIN, PIN_HIGH);
     rt_spi_send(spi_dev_lcd, array, size);

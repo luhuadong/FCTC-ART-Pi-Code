@@ -5,11 +5,10 @@ import os
 cwd  = GetCurrentDir()
 
 src  = Glob('*.c')
-src  += Glob('lvgl/*.c')
+src += Glob('lvgl/*.c')
 
-path = [cwd]
+path  = [cwd]
 path += [cwd + '/lvgl']
-
 
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = path)
 

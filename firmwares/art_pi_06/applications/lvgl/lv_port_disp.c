@@ -7,13 +7,9 @@
  * Date           Author       Notes
  * 2022-01-28     Rudy Lo      The first version
  */
-
-#include <rtthread.h>
 #include <lvgl.h>
-#include "drv_spi_ili9488.h"
-
-#define LCD_W               480
-#define LCD_H               320
+#include <rtthread.h>
+//#include <drv_lcd.h>
 
 #define MY_DISP_HOR_RES     LCD_W
 #define DISP_BUFFER_LINES   (LCD_H/5)

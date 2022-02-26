@@ -174,8 +174,8 @@
 /* LVGL: powerful and easy-to-use embedded GUI library */
 
 #define PKG_USING_LVGL
-#define PKG_USING_LVGL_V810
-#define PKG_LVGL_VER_NUM 0x08010
+#define PKG_USING_LVGL_V820
+#define PKG_LVGL_VER_NUM 0x08020
 /* end of LVGL: powerful and easy-to-use embedded GUI library */
 
 /* u8g2: a monochrome graphic library */
@@ -273,8 +273,6 @@
 #define BSP_USING_SDRAM
 /* end of On-chip Peripheral */
 /* end of Hardware Drivers Config */
-
-#define BSP_USING_LVGL
 
 /* External Libraries */
 
