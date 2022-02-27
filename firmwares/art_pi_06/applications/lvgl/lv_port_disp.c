@@ -7,9 +7,12 @@
  * Date           Author       Notes
  * 2022-01-28     Rudy Lo      The first version
  */
-#include <lvgl.h>
+
 #include <rtthread.h>
-//#include <drv_lcd.h>
+#include <lvgl.h>
+
+#define LCD_W               480
+#define LCD_H               320
 
 #define MY_DISP_HOR_RES     LCD_W
 #define DISP_BUFFER_LINES   (LCD_H/5)

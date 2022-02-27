@@ -8,16 +8,15 @@
  * 2022-02-01     Rudy Lo      The first version
  */
 
-#include <lvgl.h>
-#include <stdbool.h>
 #include <rtdevice.h>
 #include <drv_gpio.h>
-
+#include <stdbool.h>
+#include <lvgl.h>
 #include "ft6236.h"
 
-#define TOUCH_DEVICE_NAME    "touch_ft"    /* Touch 设备名称 */
-#define TOUCH_DEVICE_I2C_BUS "i2c2"        /* SCL -> PH15(127), SDA -> PH13(125) */
-#define REST_PIN             GET_PIN(A, 3)
+#define TOUCH_DEVICE_NAME        "touch_ft"    /* Touch 设备名称 */
+#define TOUCH_DEVICE_I2C_BUS     "i2c2"        /* SCL -> PH15(127), SDA -> PH13(125) */
+#define REST_PIN                 GET_PIN(A, 3)
 
 static rt_device_t ts;    /* Touch 设备句柄 Touchscreen */
 static struct rt_touch_data *read_data;
@@ -99,7 +98,7 @@ rt_err_t rt_hw_ft6236_register(void)
         struct rt_touch_info info;
         rt_device_control(ts, RT_TOUCH_CTRL_GET_INFO, &info);
         rt_kprintf("type       :%d\n", info.type);
-        rt_kprintf("vendor     :%s\n", info.vendor);
+        rt_kprintf("vendor     :%d\n", info.vendor);
         rt_kprintf("point_num  :%d\n", info.point_num);
         rt_kprintf("range_x    :%d\n", info.range_x);
         rt_kprintf("range_y    :%d\n", info.range_y);
