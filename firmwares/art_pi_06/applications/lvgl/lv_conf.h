@@ -15,7 +15,7 @@
 
 #define LV_COLOR_16_SWAP            0
 #define LV_COLOR_DEPTH              32
-#define LV_USE_PERF_MONITOR         1
+#define LV_USE_PERF_MONITOR         0
 
 #define LV_HOR_RES_MAX              480
 #define LV_VER_RES_MAX              320

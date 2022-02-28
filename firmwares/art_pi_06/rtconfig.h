@@ -99,6 +99,8 @@
 #define RT_USING_I2C_BITOPS
 #define RT_USING_PIN
 #define RT_USING_SPI
+#define RT_USING_SENSOR
+#define RT_USING_SENSOR_CMD
 #define RT_USING_TOUCH
 
 /* Using USB */
@@ -144,6 +146,28 @@
 
 /* IoT - internet of things */
 
+#define PKG_USING_FREEMODBUS
+#define PKG_MODBUS_MASTER
+
+/* advanced configuration */
+
+#define RT_M_DISCRETE_INPUT_START 0
+#define RT_M_DISCRETE_INPUT_NDISCRETES 16
+#define RT_M_COIL_START 0
+#define RT_M_COIL_NCOILS 64
+#define RT_M_REG_INPUT_START 0
+#define RT_M_REG_INPUT_NREGS 100
+#define RT_M_REG_HOLDING_START 0
+#define RT_M_REG_HOLDING_NREGS 100
+#define RT_M_HD_RESERVE 0
+#define RT_M_IN_RESERVE 0
+#define RT_M_CO_RESERVE 0
+#define RT_M_DI_RESERVE 0
+/* end of advanced configuration */
+#define PKG_MODBUS_MASTER_RTU
+#define RT_MODBUS_MASTER_USE_CONTROL_PIN
+#define MODBUS_MASTER_RT_CONTROL_PIN_INDEX 132
+#define PKG_USING_FREEMODBUS_V160
 
 /* Wi-Fi */
 
@@ -216,6 +240,7 @@
 
 /* peripheral libraries and drivers */
 
+#define PKG_USING_SENSORS_DRIVERS
 #define PKG_USING_TOUCH_DRIVERS
 #define PKG_USING_FT6236
 #define PKG_USING_FT6236_LATEST_VERSION
@@ -261,6 +286,7 @@
 #define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART4
+#define BSP_USING_UART5
 #define BSP_USING_SPI
 #define BSP_USING_SPI2
 #define BSP_USING_I2C

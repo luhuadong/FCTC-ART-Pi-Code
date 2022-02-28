@@ -7,7 +7,7 @@
  * Date           Author        Notes
  * 2022-02-03     Rudy Lo       First version
  */
-
+#if 0
 #include <rtthread.h>
 #include <lvgl.h>
 
@@ -17,8 +17,8 @@
 void my_lvgl_demo(void)
 {
     lv_obj_t *label = lv_label_create(lv_scr_act()); /* 创建一个标签 */
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);      /* 标签居中对齐 */
     lv_label_set_text(label, "Hello, World!");       /* 显示一串文字 */
+    lv_obj_center(label);                            /* 标签居中对齐 */
 }
 
 static void lvgl_thread(void *parameter)
@@ -43,3 +43,4 @@ static int lvgl_demo_init(void)
     return 0;
 }
 INIT_APP_EXPORT(lvgl_demo_init);
+#endif
