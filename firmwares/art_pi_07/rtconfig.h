@@ -99,6 +99,8 @@
 #define RT_SERIAL_USING_DMA
 #define RT_SERIAL_RB_BUFSZ 64
 #define RT_USING_PIN
+#define RT_USING_RTC
+#define RT_USING_SOFT_RTC
 #define RT_USING_SDIO
 #define RT_SDIO_STACK_SIZE 512
 #define RT_SDIO_THREAD_PRIORITY 15
@@ -156,8 +158,9 @@
 /* protocol stack implement */
 
 #define SAL_USING_LWIP
+#define SAL_USING_TLS
 /* end of protocol stack implement */
-#define SAL_SOCKETS_NUM 16
+#define SAL_USING_POSIX
 /* end of Socket abstraction layer */
 
 /* Network interface device */
@@ -235,6 +238,11 @@
 
 /* IoT - internet of things */
 
+#define PKG_USING_WEBCLIENT
+#define WEBCLIENT_DEBUG
+#define WEBCLIENT_USING_MBED_TLS
+#define PKG_USING_WEBCLIENT_V220
+#define PKG_WEBCLIENT_VER_NUM 0x20200
 
 /* Wi-Fi */
 
@@ -254,6 +262,19 @@
 
 /* security packages */
 
+#define PKG_USING_MBEDTLS
+
+/* Select Root Certificate */
+
+#define PKG_USING_MBEDTLS_USER_CERTS
+#define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
+#define PKG_USING_MBEDTLS_DST_ROOT_CA
+/* end of Select Root Certificate */
+#define MBEDTLS_AES_ROM_TABLES
+#define MBEDTLS_ECP_WINDOW_SIZE 2
+#define MBEDTLS_SSL_MAX_CONTENT_LEN 3584
+#define PKG_USING_MBEDTLS_EXAMPLE
+#define PKG_USING_MBEDTLS_V27101
 /* end of security packages */
 
 /* language packages */
@@ -319,6 +340,10 @@
 /* end of AI packages */
 
 /* miscellaneous packages */
+
+/* project laboratory */
+
+/* end of project laboratory */
 
 /* samples: kernel and components samples */
 
