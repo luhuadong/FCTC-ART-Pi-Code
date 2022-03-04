@@ -14,6 +14,7 @@
 #include <wlan_mgnt.h>
 #include <wlan_prot.h>
 #include <wlan_cfg.h>
+#include <ntp.h>
 
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -22,9 +23,20 @@
 #define WLAN_SSID               "FCTC_89"
 #define WLAN_PASSWORD           "Lu15899962740"
 #define NET_READY_TIME_OUT       (rt_tick_from_millisecond(15 * 1000))
+#define NTP_AUTO_SYNC_PERIOD     (rt_tick_from_millisecond((1L*60L*60L) * 1000))
 
 /* WLAN read 信号量 */
 static rt_sem_t net_ready = RT_NULL;
+
+/* NTP 时间同步线程 */
+static void ntp_sync_thread_enrty(void *param)
+{
+    while (1)
+    {
+        rt_thread_delay(NTP_AUTO_SYNC_PERIOD);
+        ntp_sync_to_rtc(NULL);
+    }
+}
 
 /* 准备就绪回调函数 */
 void wlan_ready_handler(int event, struct rt_wlan_buff *buff, void *parameter)
@@ -52,6 +64,8 @@ static void print_wlan_information(struct rt_wlan_info *info)
     LOG_D(" RSSI: %d", info->rssi);
     LOG_D("+--------------------------+");
 }
+
+extern int rt_hw_wlan_wait_init_done(rt_uint32_t time_ms);
 
 int main(void)
 {
@@ -85,11 +99,18 @@ int main(void)
     rt_wlan_get_info(&info);
     print_wlan_information(&info);
 
-    /* 等待成功获取 IP */
-    if (RT_EOK == rt_sem_take(net_ready, NET_READY_TIME_OUT))
+    /* 等待 Wi-Fi 连接成功 */
+    if (RT_EOK == rt_sem_take(net_ready, NET_READY_TIME_OUT)) {
         LOG_D("networking ready!");
-    else
+        /* 同步网络时间，使用默认NTP服务器 */
+        ntp_sync_to_rtc(RT_NULL);
+        /* 启动 NTP网络时间同步线程 */
+        rt_thread_t thread = rt_thread_create("ntp_sync", ntp_sync_thread_enrty, RT_NULL, 1536, 26, 2);
+        if (thread) rt_thread_startup(thread);
+    }
+    else {
         LOG_D("wait ip got timeout!");
+    }
 
     /* 自动连接 */
     LOG_D("enable autoconnect ...");

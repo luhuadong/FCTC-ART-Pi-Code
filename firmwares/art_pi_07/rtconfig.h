@@ -256,6 +256,13 @@
 
 /* end of Wiced WiFi */
 /* end of Wi-Fi */
+#define PKG_USING_NETUTILS
+#define PKG_NETUTILS_NTP
+#define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"
+#define NETUTILS_NTP_HOSTNAME2 "ntp.rt-thread.org"
+#define NETUTILS_NTP_HOSTNAME3 "edu.ntp.org.cn"
+#define PKG_USING_NETUTILS_V132
+#define PKG_NETUTILS_VER_NUM 0x10302
 
 /* IoT Cloud */
 
@@ -270,6 +277,7 @@
 
 #define PKG_USING_MBEDTLS_USER_CERTS
 #define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
+#define PKG_USING_MBEDTLS_COMODOR_ROOT_CA
 #define PKG_USING_MBEDTLS_DST_ROOT_CA
 /* end of Select Root Certificate */
 #define MBEDTLS_AES_ROM_TABLES
