@@ -76,6 +76,7 @@
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//libraries/rt_ota_lib/inc}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//libraries/samples}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//libraries/wlan_wiced_lib}&quot;" />
+                  <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/cJSON-v1.7.15}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/fal-v1.0.0/inc}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/mbedtls-v2.7.10.1/mbedtls/include}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/mbedtls-v2.7.10.1/ports/inc}&quot;" />
@@ -200,6 +201,7 @@
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//libraries/rt_ota_lib/inc}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//libraries/samples}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//libraries/wlan_wiced_lib}&quot;" />
+                  <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/cJSON-v1.7.15}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/fal-v1.0.0/inc}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/mbedtls-v2.7.10.1/mbedtls/include}&quot;" />
                   <listOptionValue builtIn="false" value="&quot;${workspace_loc://${ProjName}//packages/mbedtls-v2.7.10.1/ports/inc}&quot;" />

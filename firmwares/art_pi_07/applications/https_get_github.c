@@ -10,124 +10,86 @@
 
 #include <rtthread.h>
 #include <webclient.h>
+#include <cJSON.h>
 
-#define GET_HEADER_BUFSZ           4096
-#define GET_RESP_BUFSZ             1024
+#define HTTP_GET_URL               "https://api.github.com/repos/RT-Thread/rt-thread"
 
-#define GET_LOCAL_URI              "https://api.github.com/repos/RT-Thread/rt-thread"
-
-static int webclient_get_comm(const char *uri)
+static void parse_json_data(const char *data, const size_t len)
 {
-    struct webclient_session* session = RT_NULL;
-    unsigned char *buffer = RT_NULL;
-    int index, ret = 0;
-    int bytes_read, resp_status;
-    int content_length = -1;
+    cJSON *obj = RT_NULL;
+
+    obj = cJSON_ParseWithLength(data, len);
+
+    /* 从JSON对象中解析3组数据 */
+    int subscribers_count = cJSON_GetNumberValue(cJSON_GetObjectItem(obj, "subscribers_count"));
+    int forks             = cJSON_GetNumberValue(cJSON_GetObjectItem(obj, "forks"));
+    int stargazers_count  = cJSON_GetNumberValue(cJSON_GetObjectItem(obj, "stargazers_count"));
+
+    rt_kprintf("Watchers: %d\n", subscribers_count);
+    rt_kprintf("Forks:    %d\n", forks);
+    rt_kprintf("Stars:    %d\n", stargazers_count);
+    
+    cJSON_free(obj);
+}
+
+static int webclient_get_data(const char *uri)
+{
     char *header = RT_NULL;
-
-    buffer = (unsigned char *) web_malloc(GET_RESP_BUFSZ);
-    if (buffer == RT_NULL)
-    {
-        rt_kprintf("no memory for receive buffer.\n");
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
-
-    /* 创建 webclient 会话，设置响应头部大小 */
-    session = webclient_session_create(GET_HEADER_BUFSZ);
-    if (session == RT_NULL)
-    {
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
+    char *response = RT_NULL;
+    size_t resp_len = 0;
 
     /* 拼接自定义头部数据 */
-    webclient_request_header_add(&header, "Accept: application/json\r\n");
-    webclient_request_header_add(&header, "User-Agent: RT-Thread HTTP Agent\r\n");
-    webclient_request_header_add(&header, "Connection: close\r\n");
+    webclient_request_header_add(&header, "User-Agent: GetIoT HTTP Agent\r\n");
 
-    /* 发送 GET 请求 */
-    if ((resp_status = webclient_get(session, uri)) != 200)
-    {
-        rt_kprintf("webclient GET request failed, response(%d) error.\n", resp_status);
-        ret = -RT_ERROR;
-        goto __exit;
+    /* 发送请求，第3个参数为NULL表示GET请求 */
+    if (webclient_request(uri, header, RT_NULL, 0, (void **)&response, &resp_len) < 0) {
+        rt_kprintf("webclient GET request response data error.\n");
+        web_free(header);
+        return -RT_ERROR;
     }
 
+#if 0
+    /* 打印响应数据 */
     rt_kprintf("webclient get response data: \n");
-
-    content_length = webclient_content_length_get(session);
-    if (content_length < 0)
-    {
-        rt_kprintf("webclient GET request type is chunked.\n");
-        do
-        {
-            bytes_read = webclient_read(session, (void *)buffer, GET_RESP_BUFSZ);
-            if (bytes_read <= 0)
-            {
-                break;
-            }
-
-            for (index = 0; index < bytes_read; index++)
-            {
-                rt_kprintf("%c", buffer[index]);
-            }
-        } while (1);
-
-        rt_kprintf("\n");
+    for (int index = 0; index < resp_len; index++) {
+        rt_kprintf("%c", response[index]);
     }
-    else
-    {
-        int content_pos = 0;
+    rt_kprintf("\n");
+#endif
 
-        do
-        {
-            bytes_read = webclient_read(session, (void *)buffer,
-                    content_length - content_pos > GET_RESP_BUFSZ ?
-                            GET_RESP_BUFSZ : content_length - content_pos);
-            if (bytes_read <= 0)
-            {
-                break;
-            }
+    /* 解析并显示JSON数据 */
+    parse_json_data(response, resp_len);
 
-            for (index = 0; index < bytes_read; index++)
-            {
-                rt_kprintf("%c", buffer[index]);
-            }
-
-            content_pos += bytes_read;
-            rt_kprintf("\n>>\n");
-        } while (content_pos < content_length);
-
-        rt_kprintf("\n");
+    /* 释放内存 */
+    if (header) {
+        web_free(header);
+    }
+    if (response) {
+        web_free(response);
     }
 
-__exit:
-    if (session)
-        webclient_close(session);
-
-    if (buffer)
-        web_free(buffer);
-
-    return ret;
+    return 0;
 }
 
 int https_get_github(int argc, char **argv)
 {
     char *uri = RT_NULL;
 
+    /* 如果没有输入URI，则使用默认的测试地址 */
     if (argc == 1) {
-        uri = web_strdup(GET_LOCAL_URI);
+        uri = web_strdup(HTTP_GET_URL);
     }
     else if (argc == 2) {
         uri = web_strdup(argv[1]);
     }
     else {
-        rt_kprintf("Usage: %s <uri>\n", argv[0]);
+        rt_kprintf("Usage: %s [uri]\n", argv[0]);
         return -RT_ERROR;
     }
 
-    webclient_get_comm(uri);
+    /* 发送GET请求并获取响应数据 */
+    webclient_get_data(uri);
+    /* 释放资源 */
     web_free(uri);
 
     return RT_EOK;

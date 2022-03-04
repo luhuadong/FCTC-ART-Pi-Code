@@ -111,18 +111,21 @@ static int webclient_get_data(const char *uri)
     /* 发送请求，第3个参数为NULL表示GET请求 */
     if (webclient_request(uri, header, RT_NULL, 0, (void **)&response, &resp_len) < 0) {
         rt_kprintf("webclient GET request response data error.\n");
+        web_free(header);
         return -RT_ERROR;
     }
 
-    rt_kprintf("webclient get response data: \n");
-
     /* 打印响应数据 */
+    rt_kprintf("webclient get response data: \n");
     for (int index = 0; index < resp_len; index++) {
         rt_kprintf("%c", response[index]);
     }
     rt_kprintf("\n");
 
     /* 释放内存 */
+    if (header) {
+        web_free(header);
+    }
     if (response) {
         web_free(response);
     }
