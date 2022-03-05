@@ -114,12 +114,12 @@ static void pms5003_thread(void *parameter)
     {
         rt_memset(&resp, 0, sizeof(resp));
 
-        rt_kprintf("\nRequest...\n");
+        //rt_kprintf("\nRequest...\n");
         ret = pms_read(sensor, &resp, sizeof(resp), rt_tick_from_millisecond(3000));
 
         if (ret == sizeof(resp))
         {
-            pms_show_response(&resp);
+            //pms_show_response(&resp);
             sensor_data.temp = resp.temp;
             sensor_data.humi = resp.humi;
             sensor_data.pm25 = resp.PM2_5_atm;

@@ -308,10 +308,15 @@
 /* end of Wi-Fi */
 #define PKG_USING_NETUTILS
 #define PKG_NETUTILS_TFTP
+#define PKG_NETUTILS_IPERF
+#define PKG_NETUTILS_NETIO
 #define PKG_NETUTILS_NTP
 #define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"
 #define NETUTILS_NTP_HOSTNAME2 "ntp.rt-thread.org"
 #define NETUTILS_NTP_HOSTNAME3 "edu.ntp.org.cn"
+#define PKG_NETUTILS_TELNET
+#define PKG_NETUTILS_TCPDUMP
+#define PKG_NETUTILS_TCPDUMP_DBG
 #define PKG_USING_NETUTILS_V132
 #define PKG_NETUTILS_VER_NUM 0x10302
 
@@ -427,6 +432,8 @@
 /* entertainment: terminal games and other interesting software packages */
 
 /* end of entertainment: terminal games and other interesting software packages */
+#define PKG_USING_OPTPARSE
+#define PKG_USING_OPTPARSE_LATEST_VERSION
 /* end of miscellaneous packages */
 /* end of RT-Thread online packages */
 
