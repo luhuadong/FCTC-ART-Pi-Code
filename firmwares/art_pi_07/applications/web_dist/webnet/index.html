@@ -1,91 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <link rel=icon href=http://getiot.tech/favicon.ico>
     <!-- 新 Bootstrap4 核心 CSS 文件 -->
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
- 
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
- 
-    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
-    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
- 
     <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
     <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    
     <title>FCTC Demo</title>
 </head>
+
 <body class="text-center">
-    <div class="container">
-    <h1>从端到云构建物联网原型</h1>
+    <div class="container" style="padding: 20px;">
+        <h1>空气质量监控系统</h1>
 
-    <h1 class="btn btn-success btn-large">自动更新</h1>
-
-    <div class="row">
-        <div class="col-md-6" style="background-color: #f8f0ce;box-shadow: inset 1px -1px 1px #444, inset -1px 1px 1px #444;">
-            <h4>传感器</h4>
-            <div class="row">
-                <div class="col-md-6">
-                    <label>温度</label>
-                    <label>25</label>
-                    <label>℃</label>
+        <!-- 按钮，用于控制是否自动更新传感器数据 -->
+        <div style="padding: 20px;"> 
+            <button type="button" class="btn btn-primary" id="update-btn">自动更新</button>
+        </div>
+        
+        <div class="row">
+            <!-- 传感器 -->
+            <div class="col-md-6"
+                style="padding: 20px;background-color:LemonChiffon;box-shadow: inset 1px -1px 1px #444, inset -1px 1px 1px #444;">
+                <h4>传感器</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>温度</label>
+                        <label id="temp" style="font-weight:bold">0</label>
+                        <label>℃</label>
+                    </div>
+                    <div class="col-md-6">
+                        <label>湿度</label>
+                        <label id="humi" style="font-weight:bold">0</label>
+                        <label>%RH</label>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label>湿度</label>
-                    <label>50</label>
-                    <label>%RH</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>PM2.5</label>
+                        <label id="pm25" style="font-weight:bold">0</label>
+                        <label>μg/m3</label>
+                    </div>
+                    <div class="col-md-6">
+                        <label>甲醛</label>
+                        <label id="hcho" style="font-weight:bold">0</label>
+                        <label>mg/m3</label>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <label>PM2.5</label>
-                    <label>10</label>
-                    <label>μg/m3</label>
+            <!-- 继电器 -->
+            <div class="col-md-6"
+                style="padding: 20px;background-color:PowderBlue;box-shadow: inset 1px -1px 1px #444, inset -1px 1px 1px #444;">
+                <h4>继电器</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" name="relay" value="0" id="relay1">
+                            <label class="custom-control-label" for="relay1">继电器1</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" name="relay" value="1" id="relay2">
+                            <label class="custom-control-label" for="relay2">继电器2</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label>甲醛</label>
-                    <label>0.001</label>
-                    <label>mg/m3</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" name="relay" value="2" id="relay3">
+                            <label class="custom-control-label" for="relay3">继电器3</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" name="relay" value="3" id="relay4">
+                            <label class="custom-control-label" for="relay4">继电器4</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6" style="background-color: #c9e8f7;box-shadow: inset 1px -1px 1px #444, inset -1px 1px 1px #444;">
-            <h4>继电器</h4>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="relay1">
-                        <label class="custom-control-label" for="relay1">继电器1</label>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="relay2">
-                        <label class="custom-control-label" for="relay2">继电器2</label>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="relay3">
-                        <label class="custom-control-label" for="relay3">继电器3</label>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="relay4">
-                        <label class="custom-control-label" for="relay4">继电器4</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </div>
-
     </div>
+
+    <!-- 加载 JavaScript 脚本 -->
+    <script src="main.js"></script>
 </body>
 </html>
