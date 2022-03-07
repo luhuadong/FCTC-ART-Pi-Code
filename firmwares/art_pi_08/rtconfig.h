@@ -112,6 +112,8 @@
 #define RT_SFUD_USING_SFDP
 #define RT_SFUD_USING_FLASH_INFO_TABLE
 #define RT_SFUD_SPI_MAX_HZ 50000000
+#define RT_USING_SENSOR
+#define RT_USING_SENSOR_CMD
 #define RT_USING_WIFI
 #define RT_WLAN_DEVICE_STA_NAME "wlan0"
 #define RT_WLAN_DEVICE_AP_NAME "wlan1"
@@ -239,6 +241,28 @@
 
 #define PKG_USING_CJSON
 #define PKG_USING_CJSON_LATEST_VERSION
+#define PKG_USING_FREEMODBUS
+#define PKG_MODBUS_MASTER
+
+/* advanced configuration */
+
+#define RT_M_DISCRETE_INPUT_START 0
+#define RT_M_DISCRETE_INPUT_NDISCRETES 16
+#define RT_M_COIL_START 0
+#define RT_M_COIL_NCOILS 64
+#define RT_M_REG_INPUT_START 0
+#define RT_M_REG_INPUT_NREGS 100
+#define RT_M_REG_HOLDING_START 0
+#define RT_M_REG_HOLDING_NREGS 100
+#define RT_M_HD_RESERVE 0
+#define RT_M_IN_RESERVE 0
+#define RT_M_CO_RESERVE 0
+#define RT_M_DI_RESERVE 0
+/* end of advanced configuration */
+#define PKG_MODBUS_MASTER_RTU
+#define RT_MODBUS_MASTER_USE_CONTROL_PIN
+#define MODBUS_MASTER_RT_CONTROL_PIN_INDEX 132
+#define PKG_USING_FREEMODBUS_LATEST_VERSION
 
 /* Wi-Fi */
 
@@ -369,6 +393,11 @@
 
 /* peripheral libraries and drivers */
 
+#define PKG_USING_SENSORS_DRIVERS
+#define PKG_USING_PMSXX
+#define PKG_USING_PMSXX_ENHANCED
+#define PKG_USING_PMSXX_SEND_WAIT_TIME 2000
+#define PKG_USING_PMSXX_LATEST_VERSION
 /* end of peripheral libraries and drivers */
 
 /* AI packages */
