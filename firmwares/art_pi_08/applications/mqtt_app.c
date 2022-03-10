@@ -26,6 +26,11 @@
 #define PORT_PARITY        MB_PAR_NONE  /* 无奇偶校验 */
 #define MB_POLL_CYCLE_MS   500          /* Modbus 主站轮询周期 */
 
+typedef enum sw_state {
+    SW_TURN_OFF = 0,
+    SW_TURN_ON = 1
+} sw_state_t;
+
 /* 保存最新的传感器数据 */
 static struct local_sensor_data {
     rt_int16_t temp;
@@ -43,11 +48,11 @@ static void *pclient = NULL;
 
 #define TOPIC_FMT              "/%s/%s/user/get"
 #define TOPIC_PROPERTY_POST    "/sys/%s/%s/thing/event/property/post"
+#define TOPIC_PROPERTY_SET     "/sys/%s/%s/thing/service/property/set"
+#define TOPIC_SET_RELAY        "/sys/%s/%s/thing/service/SetRelay"
 
 #define TEST_PAYLOAD     "{\"message\":\"hello!\"}"
-#define PROPERTY_PAYLOAD "{\"id\":\"123\",\"version\":\"1.0\",\"sys\":{\"ack\":0},\
-                           \"params\":{\"Temp\":{\"value\":\"99.9\"}, \
-                           \"method\":\"thing.event.property.post\"}"
+#define PROPERTY_PAYLOAD "{\"id\":\"123\",\"version\":\"1.0\",\"sys\":{\"ack\":0},\"params\":{\"Temp\":{\"value\":%d.%d}},\"method\":\"thing.event.property.post\"}"
 
 #define EXAMPLE_TRACE(fmt, ...)  \
     do { \
@@ -56,12 +61,40 @@ static void *pclient = NULL;
         HAL_Printf("%s", "\r\n"); \
     } while(0)
 
-static int turn_off_coil(rt_uint16_t num);
+static int switch_coil(rt_uint16_t num, sw_state_t state);
 static int turn_on_coil(rt_uint16_t num);
 
 static void example_message_arrive(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
     iotx_mqtt_topic_info_t     *topic_info = (iotx_mqtt_topic_info_pt) msg->msg;
+
+#if 1
+    if (msg->event_type == IOTX_MQTT_EVENT_PUBLISH_RECEIVED) {
+        EXAMPLE_TRACE("Message Arrived:");
+        EXAMPLE_TRACE("Topic  : %.*s", topic_info->topic_len, topic_info->ptopic);
+        EXAMPLE_TRACE("Payload: %.*s", topic_info->payload_len, topic_info->payload);
+        EXAMPLE_TRACE("\n");
+
+        cJSON *root = cJSON_Parse(topic_info->payload);
+        if (root)
+        {
+            cJSON *method = cJSON_GetObjectItem(root, "method");
+            cJSON *params = cJSON_GetObjectItem(root, "params");
+            if (0 != strcmp(method->valuestring, "thing.service.property.set")) {
+                cJSON_Delete(root);
+            }
+            cJSON *relay0 = cJSON_GetObjectItem(params, "Relay0");
+            cJSON *relay1 = cJSON_GetObjectItem(params, "Relay1");
+            cJSON *relay2 = cJSON_GetObjectItem(params, "Relay2");
+            cJSON *relay3 = cJSON_GetObjectItem(params, "Relay3");
+            if (relay0) switch_coil(0, relay0->valueint);
+            if (relay1) switch_coil(1, relay1->valueint);
+            if (relay2) switch_coil(2, relay2->valueint);
+            if (relay3) switch_coil(3, relay3->valueint);
+            cJSON_Delete(root);
+        }
+    }
+#else
 
     switch (msg->event_type) {
         case IOTX_MQTT_EVENT_PUBLISH_RECEIVED:
@@ -74,23 +107,23 @@ static void example_message_arrive(void *pcontext, void *pclient, iotx_mqtt_even
         default:
             break;
     }
+#endif
 }
 
 static int example_subscribe(void *handle)
 {
     int res = 0;
-    //const char *fmt = "/%s/%s/user/get";
     char *topic = NULL;
     int topic_len = 0;
 
-    topic_len = strlen(TOPIC_FMT) + strlen(PRODUCT_KEY) + strlen(DEVICE_NAME) + 1;
+    topic_len = strlen(TOPIC_PROPERTY_SET) + strlen(PRODUCT_KEY) + strlen(DEVICE_NAME) + 1;
     topic = HAL_Malloc(topic_len);
     if (topic == NULL) {
         EXAMPLE_TRACE("memory not enough");
         return -1;
     }
     memset(topic, 0, topic_len);
-    HAL_Snprintf(topic, topic_len, TOPIC_FMT, PRODUCT_KEY, DEVICE_NAME);
+    HAL_Snprintf(topic, topic_len, TOPIC_PROPERTY_SET, PRODUCT_KEY, DEVICE_NAME);
 
     res = IOT_MQTT_Subscribe(handle, topic, IOTX_MQTT_QOS0, example_message_arrive, NULL);
     if (res < 0) {
@@ -108,7 +141,6 @@ static int publish_properties(void *handle, int value)
     int             res = 0;
     char           *topic = NULL;
     int             topic_len = 0;
-    char           *payload = NULL;
 
     topic_len = strlen(TOPIC_PROPERTY_POST) + strlen(PRODUCT_KEY) + strlen(DEVICE_NAME) + 80;
     topic = HAL_Malloc(topic_len);
@@ -119,30 +151,52 @@ static int publish_properties(void *handle, int value)
     memset(topic, 0, topic_len);
     HAL_Snprintf(topic, topic_len, TOPIC_PROPERTY_POST, PRODUCT_KEY, DEVICE_NAME);
 
-    payload = HAL_Malloc(1024);
-    if (payload == NULL) {
-        EXAMPLE_TRACE("memory not enough");
-        return -1;
-    }
+    /* 构建 Alink JSON */
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddItemToObject(root, "id", cJSON_CreateString("123"));
+    cJSON_AddItemToObject(root, "version", cJSON_CreateString("1.0"));
 
-    HAL_Snprintf(payload, 1024, PROPERTY_PAYLOAD, value/10, value%10);
+    cJSON *sys = cJSON_CreateObject();
+    cJSON_AddItemToObject(root, "sys", sys);
+    cJSON_AddItemToObject(sys, "ack", cJSON_CreateNumber(0));
 
-    res = IOT_MQTT_Publish_Simple(0, topic, IOTX_MQTT_QOS0, PROPERTY_PAYLOAD, strlen(PROPERTY_PAYLOAD));
+    cJSON *params = cJSON_CreateObject();
+    cJSON_AddItemToObject(root, "params", params);
+    cJSON *temp = cJSON_CreateObject();
+    cJSON_AddItemToObject(params, "Temp", temp);
+    cJSON_AddItemToObject(temp, "value", cJSON_CreateNumber(sensor_data.temp/10.0));
+    cJSON *humi = cJSON_CreateObject();
+    cJSON_AddItemToObject(params, "Humi", humi);
+    cJSON_AddItemToObject(humi, "value", cJSON_CreateNumber(sensor_data.humi/10.0));
+    cJSON *pm25 = cJSON_CreateObject();
+    cJSON_AddItemToObject(params, "Dust", pm25);
+    cJSON_AddItemToObject(pm25, "value", cJSON_CreateNumber(sensor_data.pm25));
+    cJSON *hcho = cJSON_CreateObject();
+    cJSON_AddItemToObject(params, "HCHO", hcho);
+    cJSON_AddItemToObject(hcho, "value", cJSON_CreateNumber(sensor_data.hcho/1000.0));
+
+    cJSON_AddItemToObject(root, "method", cJSON_CreateString("thing.event.property.post"));
+
+    char *json_data = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    res = IOT_MQTT_Publish_Simple(0, topic, IOTX_MQTT_QOS0, json_data, strlen(json_data));
     if (res < 0) {
         EXAMPLE_TRACE("publish failed, res = %d", res);
         HAL_Free(topic);
-        HAL_Free(payload);
+        rt_free(json_data);
         return -1;
     }
 
     HAL_Free(topic);
-    HAL_Free(payload);
+    rt_free(json_data);
     return 0;
 }
 
 static void example_event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
     EXAMPLE_TRACE("msg->event_type : %d", msg->event_type);
+    EXAMPLE_TRACE("msg->msg : %s", (char *)msg->msg);
 }
 
 static int mqtt_init(void)
@@ -193,12 +247,14 @@ static int mqtt_init(void)
     /* 绑定 MQTT 事件回调函数 */
     mqtt_params.handle_event.h_fp = example_event_handle;
 
+    /* 建立 MQTT 连接 */
     pclient = IOT_MQTT_Construct(&mqtt_params);
     if (NULL == pclient) {
         EXAMPLE_TRACE("MQTT construct failed");
         return -1;
     }
 
+    /* 订阅 Topic 主题 */
     res = example_subscribe(pclient);
     if (res < 0) {
         IOT_MQTT_Destroy(&pclient);
@@ -207,7 +263,9 @@ static int mqtt_init(void)
     }
 
     while (1) {
+        /* 保持长连接状态，实现设备长期在线 */
         IOT_MQTT_Yield(pclient, 200);
+        HAL_SleepMs(100);
     }
 
     return 0;
@@ -240,6 +298,7 @@ static void pms5003_thread(void *parameter)
             sensor_data.humi = resp.humi;
             sensor_data.pm25 = resp.PM2_5_atm;
             sensor_data.hcho = resp.hcho;
+            rt_kprintf("Temp: %d, Humi: %d, PM2.5: %d, HCHO: %d\n", resp.temp, resp.humi, resp.PM2_5_atm, resp.hcho);
             if (pclient)
                 publish_properties(pclient, sensor_data.temp);
         }
@@ -247,7 +306,7 @@ static void pms5003_thread(void *parameter)
         {
             rt_kprintf("Read error\n");
         }
-        rt_thread_mdelay(3000);
+        rt_thread_mdelay(60 * 1000);
     }
 
     pms_delete(sensor);
@@ -263,25 +322,16 @@ static void sensor_init(void)
         rt_thread_startup(tid);
 }
 
-static int turn_on_coil(rt_uint16_t num)
+static int switch_coil(rt_uint16_t num, sw_state_t state)
 {
     eMBMasterReqErrCode error_code = MB_MRE_NO_ERR;
 
-    error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0xFF00, rt_tick_from_millisecond(3000));
-
-    if (error_code != MB_MRE_NO_ERR)
-    {
-        rt_kprintf("Error code: %d\n", error_code);
-        return -RT_ERROR;
+    rt_uint16_t data = 0x0000;
+    if (state == SW_TURN_ON) {
+        data = 0xFF00;
     }
-    return RT_EOK;
-}
 
-static int turn_off_coil(rt_uint16_t num)
-{
-    eMBMasterReqErrCode error_code = MB_MRE_NO_ERR;
-
-    error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, 0x0000, rt_tick_from_millisecond(3000));
+    error_code = eMBMasterReqWriteCoil(SLAVE_ADDR, num, data, rt_tick_from_millisecond(3000));
 
     if (error_code != MB_MRE_NO_ERR)
     {
@@ -319,7 +369,7 @@ static void run_mqtt_app(void)
     rt_kprintf(">> 2\n");
     sensor_init();  /* 初始化传感器 */
     rt_kprintf(">> 3\n");
-    //modbus_init();  /* 初始化Modbus */
+    modbus_init();  /* 初始化Modbus */
     rt_kprintf(">> 4\n");
     mqtt_init();    /* 启动 Web 服务器 */
 }
